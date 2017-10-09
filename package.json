@@ -1,0 +1,36 @@
+{
+  "name": "@targetdummy/test-data",
+  "version": "0.0.1",
+  "description": "Command Line Interface for TargetDummy",
+  "main": "index.js",
+  "scripts": {
+    "lint": "./node_modules/.bin/eslint -c .eslintrc.js .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ben Weier <ben.weier@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bnettargetdummy/test-data.git"
+  },
+  "dependencies": {
+    "app-root-path": "^2.0.1",
+    "async": "^2.5.0",
+    "blizzard.js": "^1.7.0",
+    "glob": "^7.1.2",
+    "js-yaml": "^3.10.0",
+    "lodash": "^4.17.4",
+    "mocha": "^3.5.3",
+    "sequelize": "^4.11.3",
+    "sequelize-cli": "^3.0.0",
+    "sqlite3": "^3.1.13",
+    "yargs": "^9.0.1"
+  },
+  "bin": {
+    "td-test-data": "index.js",
+    "targetdummy-test-data": "index.js"
+  },
+  "devDependencies": {
+    "eslint": "^4.7.2"
+  }
+}
