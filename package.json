@@ -4,10 +4,18 @@
   "description": "Command Line Interface for TargetDummy",
   "main": "index.js",
   "scripts": {
-    "lint": "./node_modules/.bin/eslint -c .eslintrc.js .",
+    "format": "standard --fix",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Ben Weier <ben.weier@gmail.com>",
+  "contributors": [{
+    "name": "Devin Leaman (Alcha)",
+    "email": "admin@paranoiddevs.com",
+    "url": "https://paranoiddevs.com"
+  }, {
+    "name": "Josh Weiss",
+    "url": "https://github.com/coder4life"
+  }],
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -31,6 +39,6 @@
     "targetdummy-test-data": "index.js"
   },
   "devDependencies": {
-    "eslint": "^4.7.2"
+    "standard": "10.0.3"
   }
 }
