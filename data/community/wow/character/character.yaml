@@ -1,7 +1,6 @@
-character:
-  - region: us
-    character: alcha
-    realm: maelstrom
-  - region: us
-    character: jareff
-    realm: maelstrom
+- region: us
+  character: alcha
+  realm: maelstrom
+- region: us
+  character: jareff
+  realm: maelstrom

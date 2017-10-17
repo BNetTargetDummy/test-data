@@ -10,10 +10,10 @@ const Sequelize = require('sequelize');
 // Require specific files to load
 const Data = require(AppRoot + '/src/data');
 
-class AchievementCharacterDataWowCommunityData extends Data {
+class AchievementGuildDataWowCommunityData extends Data {
   constructor(options) {
     super();
-    this.name = 'Achievement Character Data World of Warcraft Community Data';
+    this.name = 'Achievement Guild Data World of Warcraft Community Data';
     this.description = 'The achievement data from the World of Warcraft community data endpoints.';
     this.scope = 'community';
     this.dataPath = 'data/community/wow/achievement/';
@@ -21,7 +21,7 @@ class AchievementCharacterDataWowCommunityData extends Data {
   }
 
   request() {
-    return BlizzardJS.wow.data('character-achievements',  { origin: 'us' })
+    return BlizzardJS.wow.data('guild-achievements',  { origin: 'us' })
       .then(response => {
         return response.data.achievements;
       })
@@ -44,23 +44,23 @@ class AchievementCharacterDataWowCommunityData extends Data {
       if (obj.hasOwnProperty('title')) {
         achievements.push(obj);
       }
-      });
+    });
 
-      return achievements;
+    return achievements;
   }
 
   store(source) {
     if (source) {
-      let composed, merged, sorted, yamlData;
-      yamlData = this.readStorage(this.dataPath, this.dataFilename);
-      console.log('Character Data Achievements read from file: ' + yamlData);
-      composed = _.map(source, item => _.merge(_.pick(item, ['id']), { locale : 'en_US' }));
-      merged = _.merge(yamlData, composed);
-      sorted = _.sortBy(merged, ['id']);
-      this.writeStorage(sorted, this.dataPath, this.dataFilename)
+      let yamlData = this.readStorage(this.dataPath, this.dataFilename);
+      console.log('Guild Data Achievements read from file: ' + yamlData);
+      let composed = _.map(source, item => _.merge(_.pick(item, ['id']), { locale : 'en_US' }));
+      let merged = _.merge(yamlData, composed);
+      //console.log(merged);
+      let sorted = _.sortBy(merged, ['id']);
+      this.writeStorage(sorted, AppRoot + '/' + this.dataPath, this.dataFilename)
     }
   }
 
 }
 
-module.exports = new AchievementCharacterDataWowCommunityData();
+module.exports = new AchievementGuildDataWowCommunityData();
