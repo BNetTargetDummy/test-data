@@ -1,3 +1,5 @@
 blizzard:
   api:
     key: 'keygoeshere'
+storage:
+  type: 'yaml'

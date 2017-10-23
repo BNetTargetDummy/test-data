@@ -1,10 +1,11 @@
 // Require configs
-const configBlizzardAPI = require('config').get('blizzard');
+const configBlizzard = require('config').get('blizzard');
+const configStorage = require('config').get('storage');
 
 // Require module libraries
 const _ = require('lodash');
 const AppRoot = require('app-root-path');
-const BlizzardJS = require('blizzard.js').initialize({ apikey: configBlizzardAPI.get('api.key') });
+const BlizzardJS = require('blizzard.js').initialize({ apikey: configBlizzard.get('api.key') });
 const Sequelize = require('sequelize');
 
 // Require specific files to load
@@ -31,33 +32,34 @@ class AchievementGuildDataWowCommunityData extends Data {
   }
 
   process(achievements, arr) {
-
     _.map(arr, obj => {
       if (obj.hasOwnProperty('achievements')) {
         achievements = this.process(achievements, obj.achievements);
       }
-
       if (obj.hasOwnProperty('categories')) {
         achievements = this.process(achievements, obj.categories);
       }
-
       if (obj.hasOwnProperty('title')) {
         achievements.push(obj);
       }
     });
-
     return achievements;
   }
 
   store(source) {
     if (source) {
-      let yamlData = this.readStorage(this.dataPath, this.dataFilename);
-      console.log('Guild Data Achievements read from file: ' + yamlData);
-      let composed = _.map(source, item => _.merge(_.pick(item, ['id']), { locale : 'en_US' }));
-      let merged = _.merge(yamlData, composed);
-      //console.log(merged);
-      let sorted = _.sortBy(merged, ['id']);
-      this.writeStorage(sorted, AppRoot + '/' + this.dataPath, this.dataFilename)
+      let composed, merged, sorted;
+      let fullPath = this.pathStorage(this.dataPath, this.dataFilename, configStorage.get('type'));
+      this.readStorage(this.dataPath, this.dataFilename, configStorage.get('type'), (error, data) => {
+        console.log('Achievements read from file: ' + fullPath);
+        composed = _.map(source, item => _.merge(_.pick(item, ['id']), { locale : 'en_US' }));
+        merged = _.merge(data, composed);
+        sorted = _.sortBy(merged, ['id']);
+        this.writeStorage(sorted, this.dataPath, this.dataFilename, configStorage.get('type'), (error) => {
+          if(error) throw Error('Storage failed!!!');
+          console.log('Achievements wrote to file: ' + fullPath);
+        });
+      });
     }
   }
 

@@ -11,13 +11,13 @@ class Data {
     this.type = this.constructor.name;
   }
 
-  get response() {
+  /*get response() {
     return this._response;
   }
 
   set response(response) {
     this._response = response;
-  }
+  }*/
 
   static instances() {
     const data = [];
@@ -50,6 +50,7 @@ class Data {
           return data.process([], result)
         })
         .then(result => {
+          console.log(result.length);
           return data.store(result)
         })
         .catch(() => {
@@ -58,52 +59,57 @@ class Data {
     });
   }
 
-  readStorage(filePath, fileName, extension = 'yaml') {
-    let fullPath =  AppRoot + '/' + filePath.replace(/\/+$/, "") + '/' + fileName + '.' + extension;
+  readStorage(filePath, fileName, extension, callback) {
+    let fullPath = this.pathStorage(filePath, fileName, extension);
     let lock = new ReadWriteLock();
     lock.readLock(fullPath, (release) => {
-      FS.access(fullPath, (error) => {
-        if (error && error.code === 'ENOENT') {
-          return null;
-        } else {
+      FS.readFile(fullPath, 'utf8', (error, data) => {
+        let parsed;
+        if (error && error.code === 'ENOENT') return callback(error);
+        try {
           if (extension === 'js') {
-            return JSON.parse(FS.readFileSync(fullPath, 'utf8'));
+            parsed = JSON.parse(data);
           } else if (extension === 'yaml') {
-            return YamlJS.safeLoad(FS.readFileSync(fullPath, 'utf8'));
+            parsed = YamlJS.safeLoad(data);
           } else {
-            return new Error('Invalid file type supported');
+            return callback(new Error('Invalid file type supported'));
           }
+        } catch (exception) {
+          return callback(exception)
         }
+        //console.log(parsed);
+        return callback(null, parsed);
+
       });
       release();
     })
   }
 
-  writeStorage(data, filePath, fileName, extension = 'yaml', overwrite = true) {
-    let fullPath = AppRoot + '/' + filePath.replace(/\/+$/, "") + '/' + fileName + '.' + extension;
+  writeStorage(data, filePath, fileName, extension, overwrite = true, callback) {
+    let fullPath = this.pathStorage(filePath, fileName, extension);
     let lock = new ReadWriteLock();
     lock.writeLock(fullPath, (release) => {
       if (extension === 'js') {
         FS.outputFile(fullPath, JSON.stringify(data), (error) => {
-          if (error) {
-            console.error("write error:  " + error.message);
-          } else {
-            console.log("Successfully wrote to: " + fullPath);
-          }
+          if (error) return callback(error);
         });
       } else if (extension === 'yaml') {
         FS.outputFile(fullPath, YamlJS.safeDump(data), (error) => {
-          if (error) {
-            console.error("write error:  " + error.message);
-          } else {
-            console.log("Successfully wrote to: " + fullPath);
-          }
+          if (error) return callback(error);
         });
       } else {
         return new Error('Invalid file type supported');
       }
       release();
     })
+  }
+
+  pathStorage(filePath, fileName, extension) {
+    if(filePath && fileName && extension) {
+      return AppRoot + '/' + filePath.replace(/\/+$/, "") + '/' + fileName + '.' + extension
+    } else {
+      return Error('Invalid file structure!!!');
+    }
   }
 }
 
