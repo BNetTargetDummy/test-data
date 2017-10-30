@@ -1,9 +1,9 @@
 const AppRoot = require('app-root-path');
+const Async = require('async');
 const FS = require('fs-extra');
 const Glob = require('glob');
 const Path = require('path');
 const YamlJS = require('js-yaml');
-const ReadWriteLock = require('rwlock');
 
 class Data {
 
@@ -43,65 +43,41 @@ class Data {
   }
 
   static run(scoped = null) {
-    this.scoped(scoped).forEach(data => {
-      // console.log(data);
+    Async.eachSeries(this.scoped(scoped), (data, next) => {
+      console.log(data);
       data.request()
         .then(result => {
           return data.process([], result)
         })
         .then(result => {
           console.log(result.length);
-          return data.store(result)
+          return data.store(result);
+
         })
-        .catch(() => {
-          new Error('Fetch Failed !!!')
-        });
+        .catch(error => next(error));
+        next();
     });
   }
 
-  readStorage(filePath, fileName, extension, callback) {
-    let fullPath = this.pathStorage(filePath, fileName, extension);
-    let lock = new ReadWriteLock();
-    lock.readLock(fullPath, (release) => {
-      FS.readFile(fullPath, 'utf8', (error, data) => {
-        let parsed;
-        if (error && error.code === 'ENOENT') return callback(error);
-        try {
-          if (extension === 'js') {
-            parsed = JSON.parse(data);
-          } else if (extension === 'yaml') {
-            parsed = YamlJS.safeLoad(data);
-          } else {
-            return callback(new Error('Invalid file type supported'));
-          }
-        } catch (exception) {
-          return callback(exception)
-        }
-        //console.log(parsed);
-        return callback(null, parsed);
-
-      });
-      release();
-    })
+  readStorage(filePath, fileName, extension) {
+    let data  = FS.readFileSync(this.pathStorage(filePath, fileName, extension), 'utf8');
+    console.log(this.constructor.name + ' read from file: ' + this.pathStorage(filePath, fileName, extension));
+    if (extension === 'js') {
+      return JSON.parse(data);
+    } else if (extension === 'yaml') {
+      return YamlJS.safeLoad(data);
+    }
+    return callback(Error('Invalid file type supported'));
   }
 
-  writeStorage(data, filePath, fileName, extension, overwrite = true, callback) {
-    let fullPath = this.pathStorage(filePath, fileName, extension);
-    let lock = new ReadWriteLock();
-    lock.writeLock(fullPath, (release) => {
+  writeStorage(data, filePath, fileName, extension, overwrite = true) {
       if (extension === 'js') {
-        FS.outputFile(fullPath, JSON.stringify(data), (error) => {
-          if (error) return callback(error);
-        });
+        FS.outputFileSync(this.pathStorage(filePath, fileName, extension), JSON.stringify(data));
       } else if (extension === 'yaml') {
-        FS.outputFile(fullPath, YamlJS.safeDump(data), (error) => {
-          if (error) return callback(error);
-        });
+        FS.outputFileSync(this.pathStorage(filePath, fileName, extension), YamlJS.safeDump(data));
       } else {
-        return new Error('Invalid file type supported');
+        return Error('Invalid file type supported');
       }
-      release();
-    })
   }
 
   pathStorage(filePath, fileName, extension) {

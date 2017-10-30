@@ -48,18 +48,12 @@ class AchievementGuildDataWowCommunityData extends Data {
 
   store(source) {
     if (source) {
-      let composed, merged, sorted;
-      let fullPath = this.pathStorage(this.dataPath, this.dataFilename, configStorage.get('type'));
-      this.readStorage(this.dataPath, this.dataFilename, configStorage.get('type'), (error, data) => {
-        console.log('Achievements read from file: ' + fullPath);
-        composed = _.map(source, item => _.merge(_.pick(item, ['id']), { locale : 'en_US' }));
-        merged = _.merge(data, composed);
-        sorted = _.sortBy(merged, ['id']);
-        this.writeStorage(sorted, this.dataPath, this.dataFilename, configStorage.get('type'), (error) => {
-          if(error) throw Error('Storage failed!!!');
-          console.log('Achievements wrote to file: ' + fullPath);
-        });
-      });
+      let composed, merged, sorted, data;
+      data = this.readStorage(this.dataPath, this.dataFilename, configStorage.get('type'));
+      composed = _.map(source, item => _.merge(_.pick(item, ['id']), { locale : 'en_US' }));
+      merged = _.merge(data, composed);
+      sorted = _.sortBy(merged, ['id']);
+      this.writeStorage(sorted, this.dataPath, this.dataFilename, configStorage.get('type'));
     }
   }
 
